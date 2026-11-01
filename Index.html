@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Registro de instrumental</title>
+<style>
+:root{--azul:#0b5cab;--azul-osc:#083d73;--azul-cl:#e8f1fa;--fondo:#f3f7fb;--txt:#16283a;--gris:#5d7083;--borde:#d3dfeb;--verde:#16883f;--verde-cl:#e3f5ea;--rojo:#c62d2d;--rojo-cl:#fce9e9}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--fondo);color:var(--txt);display:flex;flex-direction:column;min-height:100vh}
+header{background:#fff;border-bottom:3px solid var(--azul);padding:14px 28px;display:flex;align-items:center;gap:18px}
+#logoBox{width:64px;height:64px;flex:none;display:flex;align-items:center;justify-content:center}
+#logoBox img{max-width:100%;max-height:100%}
+#logoBox svg{width:56px;height:56px}
+header h2{margin:0;font-size:1rem;font-weight:600;color:var(--gris)}
+header h1{margin:2px 0;font-size:1.7rem;color:var(--azul-osc);letter-spacing:.02em}
+header p{margin:0;font-size:.95rem;font-weight:600;color:var(--azul)}
+main{flex:1;width:100%;max-width:1100px;margin:0 auto;padding:22px 20px;display:grid;grid-template-columns:minmax(0,2fr) minmax(260px,1fr);gap:20px;align-content:start}
+.card{background:#fff;border:1px solid var(--borde);border-radius:14px;padding:20px}
+.col{display:flex;flex-direction:column;gap:20px}
+.mov{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.mov button{font:inherit;font-size:1.6rem;font-weight:700;padding:22px 10px;border-radius:12px;border:3px solid transparent;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;opacity:.55}
+.mov svg{width:28px;height:28px}
+#bIn{background:var(--verde)}#bOut{background:var(--rojo)}
+.mov button.sel{opacity:1;border-color:var(--txt)}
+#bIn.sel{box-shadow:0 0 0 4px #fff,0 0 0 7px var(--verde)}#bOut.sel{box-shadow:0 0 0 4px #fff,0 0 0 7px var(--rojo)}
+.mov.vacio button{opacity:.85}
+label{display:block;font-weight:600;margin-bottom:8px}
+#codigo{width:100%;font:inherit;font-size:1.7rem;padding:18px;border:2px solid var(--azul);border-radius:12px;background:var(--azul-cl);color:var(--txt);outline:none}
+#codigo:focus{box-shadow:0 0 0 4px rgba(11,92,171,.25)}
+.ayuda{margin:10px 0 0;color:var(--gris);font-size:.95rem;line-height:1.4}
+#reg{margin-top:16px;width:100%;font:inherit;font-size:1.4rem;font-weight:700;padding:18px;border:0;border-radius:12px;background:var(--azul);color:#fff;cursor:pointer}
+#reg:hover{background:var(--azul-osc)}#reg:disabled{background:#8aa3bd;cursor:wait}
+button:focus-visible{outline:3px solid #000;outline-offset:2px}
+#res{border-radius:14px;padding:22px;text-align:center;border:2px solid var(--borde);background:#fff;min-height:170px;display:flex;flex-direction:column;justify-content:center;gap:6px}
+#res .t{font-size:2rem;font-weight:800}
+#res .d{font-size:1.15rem}
+#res.ok{background:var(--verde-cl);border-color:var(--verde);color:#0b5a28}
+#res.err{background:var(--rojo-cl);border-color:var(--rojo);color:#8f1c1c}
+#res.idle{color:var(--gris)}
+.info h3{margin:0 0 12px;font-size:1rem;color:var(--azul-osc)}
+.info dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:.92rem}
+.info dt{color:var(--gris)}.info dd{margin:0;font-weight:600;text-align:right}
+.estado{display:flex;align-items:center;gap:8px;font-weight:600;font-size:.95rem}
+.punto{width:12px;height:12px;border-radius:50%;background:#999;flex:none}
+.estado.on .punto{background:var(--verde)}.estado.off .punto{background:var(--rojo)}
+#conectar{margin-top:12px;width:100%;font:inherit;font-weight:600;padding:12px;border-radius:10px;border:2px solid var(--azul);background:#fff;color:var(--azul);cursor:pointer}
+#nuevo{margin-top:8px;width:100%;font:inherit;font-size:.85rem;padding:8px;border:0;background:none;color:var(--gris);cursor:pointer;text-decoration:underline}
+.cont{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:6px}
+.cont div{background:var(--fondo);border-radius:8px;padding:6px 4px;text-align:center;font-size:.78rem;color:var(--gris)}
+.cont b{display:block;font-size:1.15rem;color:var(--txt)}
+footer{text-align:center;padding:14px;color:var(--gris);font-size:.85rem}
+@media(max-width:820px){main{grid-template-columns:1fr}header h1{font-size:1.3rem}.mov button{font-size:1.25rem}}
+</style>
+</head>
+<body>
+<header>
+  <div id="logoBox"></div>
+  <div>
+    <h2 id="hHosp"></h2>
+    <h1 id="hTitulo"></h1>
+    <p id="hSub"></p>
+  </div>
+</header>
+
+<main>
+  <div class="col">
+    <section class="card">
+      <div class="mov vacio" id="mov">
+        <button id="bIn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>ENTRADA</button>
+        <button id="bOut" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>SALIDA</button>
+      </div>
+    </section>
+    <section class="card">
+      <label for="codigo">Código de barras</label>
+      <input id="codigo" type="text" autocomplete="off" spellcheck="false" placeholder="Esperando lectura del código de barras…">
+      <p class="ayuda">Selecciona ENTRADA o SALIDA y escanea el código de barras de la pistola. Pulsa ENTER para registrar el movimiento.</p>
+      <button id="reg" type="button">REGISTRAR MOVIMIENTO</button>
+    </section>
+    <section id="res" class="idle" aria-live="assertive"><div class="d">Sin movimientos en esta sesión</div></section>
+  </div>
+
+  <aside class="col">
+    <section class="card info">
+      <h3>Archivo Excel</h3>
+      <div id="estado" class="estado off"><span class="punto"></span><span id="estadoTxt">Sin conectar</span></div>
+      <button id="conectar" type="button">Conectar con registro.xlsx</button>
+      <button id="nuevo" type="button">Crear archivo nuevo</button>
+    </section>
+    <section class="card info">
+      <h3>Último movimiento</h3>
+      <dl>
+        <dt>Movimiento</dt><dd id="uMov">—</dd>
+        <dt>Pistola</dt><dd id="uPis">—</dd>
+        <dt>Fecha y hora</dt><dd id="uFec">—</dd>
+      </dl>
+    </section>
+    <section class="card info">
+      <h3>Registros acumulados</h3>
+      <div class="cont" id="cont"></div>
+    </section>
+  </aside>
+</main>
+<footer id="pie"></footer>
+
+<script>
+/* ===== CONFIGURACIÓN ===== */
+const CONFIG = {
+  hospitalName: "NOMBRE DEL HOSPITAL",
+  applicationTitle: "REGISTRO DE INSTRUMENTAL",
+  subtitle: "MEDICINA PREVENTIVA",
+  authorName: "TU NOMBRE",
+  logoPath: "logo.png",
+  sheetName: "REGISTRO",
+  // Códigos DUMMY: sustituir por los códigos reales (se admiten varios por pistola)
+  barcodes: {
+    pistol1: ["DUMMY001"],
+    pistol2: ["DUMMY002"],
+    pistol3: ["DUMMY003"],
+    pistol4: ["DUMMY004"]
+  }
+};
+/* ========================= */
+
+const COLS = ["P1 Entrada","P1 Salida","P2 Entrada","P2 Salida","P3 Entrada","P3 Salida","P4 Entrada","P4 Salida"];
+const $ = id => document.getElementById(id);
+const inp = $("codigo");
+let handle = null, movimiento = null, busy = false;
+
+/* ---------- Cabecera y pie ---------- */
+$("hHosp").textContent = CONFIG.hospitalName;
+$("hTitulo").textContent = CONFIG.applicationTitle;
+$("hSub").textContent = CONFIG.subtitle;
+$("pie").textContent = "Desarrollado por " + CONFIG.authorName;
+document.title = CONFIG.applicationTitle;
+(function(){
+  const box = $("logoBox"), img = new Image();
+  img.alt = "Logo";
+  img.onload = () => box.appendChild(img);
+  img.onerror = () => box.innerHTML = '<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#0b5cab"/><path d="M26 14h12v12h12v12H38v12H26V38H14V26h12z" fill="#fff"/></svg>';
+  img.src = CONFIG.logoPath;
+})();
+
+/* ---------- Utilidades ---------- */
+const p2 = n => String(n).padStart(2,"0");
+const fmt = d => `${p2(d.getDate())}/${p2(d.getMonth()+1)}/${d.getFullYear()} ${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())}`;
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const td = new TextDecoder(), te = new TextEncoder();
+let actx;
+function beep(ok){
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const seq = ok ? [[880,0,.12],[1320,.13,.18]] : [[220,0,.25],[180,.28,.3]];
+    seq.forEach(([f,t,d])=>{
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = ok ? "sine" : "square"; o.frequency.value = f; g.gain.value = .15;
+      o.connect(g); g.connect(actx.destination);
+      o.start(actx.currentTime+t); o.stop(actx.currentTime+t+d);
+    });
+  }catch(e){}
+}
+
+/* ---------- ZIP mínimo (lectura y escritura) ---------- */
+const CRC = (()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+function crc32(u8){let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=CRC[(c^u8[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0}
+
+async function inflate(d){
+  const s = new Blob([d]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+  return new Uint8Array(await new Response(s).arrayBuffer());
+}
+async function unzip(buf){
+  const u8 = new Uint8Array(buf), dv = new DataView(buf);
+  let e = u8.length-22;
+  while(e>=0 && dv.getUint32(e,true)!==0x06054b50) e--;
+  if(e<0) throw new Error("El archivo no es un Excel (.xlsx) válido.");
+  const n = dv.getUint16(e+10,true); let p = dv.getUint32(e+16,true); const out = {};
+  for(let i=0;i<n;i++){
+    const m = dv.getUint16(p+10,true), cs = dv.getUint32(p+20,true), nl = dv.getUint16(p+28,true),
+          el = dv.getUint16(p+30,true), cl = dv.getUint16(p+32,true), lo = dv.getUint32(p+42,true);
+    const name = td.decode(u8.subarray(p+46,p+46+nl)); p += 46+nl+el+cl;
+    const st = lo+30+dv.getUint16(lo+26,true)+dv.getUint16(lo+28,true);
+    const d = u8.subarray(st,st+cs);
+    out[name] = m===0 ? d : await inflate(d);
+  }
+  return out;
+}
+function zip(files){
+  const parts = [], cd = []; let off = 0, cds = 0;
+  const names = Object.keys(files);
+  for(const name of names){
+    const nb = te.encode(name), d = te.encode(files[name]), crc = crc32(d);
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true); lh.setUint16(4,20,true); lh.setUint16(6,0x0800,true);
+    lh.setUint16(12,0x21,true); lh.setUint32(14,crc,true); lh.setUint32(18,d.length,true);
+    lh.setUint32(22,d.length,true); lh.setUint16(26,nb.length,true);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true); ch.setUint16(4,20,true); ch.setUint16(6,20,true); ch.setUint16(8,0x0800,true);
+    ch.setUint16(14,0x21,true); ch.setUint32(16,crc,true); ch.setUint32(20,d.length,true);
+    ch.setUint32(24,d.length,true); ch.setUint16(28,nb.length,true); ch.setUint32(42,off,true);
+    parts.push(lh,nb,d); cd.push(ch,nb);
+    off += 30+nb.length+d.length; cds += 46+nb.length;
+  }
+  const eo = new DataView(new ArrayBuffer(22));
+  eo.setUint32(0,0x06054b50,true); eo.setUint16(8,names.length,true);
+  eo.setUint16(10,names.length,true); eo.setUint32(12,cds,true); eo.setUint32(16,off,true);
+  return new Blob([...parts,...cd,eo],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+}
+
+/* ---------- Excel: leer y generar ---------- */
+const colIdx = ref => { let n = 0; for(const ch of ref.replace(/\d/g,"")) n = n*26 + ch.charCodeAt(0)-64; return n-1; };
+const parseXml = u8 => new DOMParser().parseFromString(td.decode(u8),"application/xml");
+const textOf = el => Array.from(el.getElementsByTagName("t")).map(t=>t.textContent).join("");
+
+function serialToStr(v){
+  const d = new Date(Math.round((v-25569)*86400000));
+  return `${p2(d.getUTCDate())}/${p2(d.getUTCMonth()+1)}/${d.getUTCFullYear()} ${p2(d.getUTCHours())}:${p2(d.getUTCMinutes())}:${p2(d.getUTCSeconds())}`;
+}
+
+async function parseWorkbook(buf){
+  const z = await unzip(buf);
+  if(!z["xl/workbook.xml"]) throw new Error("El archivo no es un libro de Excel válido.");
+  const wb = parseXml(z["xl/workbook.xml"]);
+  const sh = Array.from(wb.getElementsByTagName("sheet")).find(s=>s.getAttribute("name")===CONFIG.sheetName);
+  if(!sh) throw new Error(`No existe la hoja "${CONFIG.sheetName}" en el archivo.`);
+  const rid = sh.getAttribute("r:id") || sh.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships","id");
+  const rel = Array.from(parseXml(z["xl/_rels/workbook.xml.rels"]).getElementsByTagName("Relationship")).find(r=>r.getAttribute("Id")===rid);
+  let path = rel.getAttribute("Target").replace(/^\//,""); if(!path.startsWith("xl/")) path = "xl/"+path;
+  const shared = z["xl/sharedStrings.xml"] ? Array.from(parseXml(z["xl/sharedStrings.xml"]).getElementsByTagName("si")).map(textOf) : [];
+  const rows = Array.from(parseXml(z[path]).getElementsByTagName("row"));
+  const grid = [];
+  rows.forEach(r=>{
+    Array.from(r.getElementsByTagName("c")).forEach(c=>{
+      const ref = c.getAttribute("r"), t = c.getAttribute("t"), v = c.getElementsByTagName("v")[0];
+      let val = "";
+      if(t==="s" && v) val = shared[+v.textContent] ?? "";
+      else if(t==="inlineStr") val = textOf(c);
+      else if(v) val = (!t||t==="n") && v.textContent!=="" ? serialToStr(+v.textContent) : v.textContent;
+      const ri = parseInt(ref.replace(/\D/g,""),10)-1, ci = colIdx(ref);
+      (grid[ri] = grid[ri]||[])[ci] = String(val).trim();
+    });
+  });
+  const head = grid[0] || [];
+  COLS.forEach((h,i)=>{ if((head[i]||"")!==h) throw new Error(`Estructura incorrecta: la columna ${i+1} debe llamarse "${h}".`); });
+  const data = COLS.map(()=>[]);
+  for(let i=1;i<grid.length;i++) COLS.forEach((_,k)=>{ const v = grid[i] && grid[i][k]; if(v) data[k][i-1] = v; });
+  data.forEach(a=>{ for(let i=0;i<a.length;i++) if(a[i]===undefined) a[i] = ""; });
+  return data;
+}
+
+function buildWorkbook(data){
+  const n = Math.max(0,...data.map(a=>a.length));
+  const L = "ABCDEFGH";
+  let rows = '<row r="1">' + COLS.map((h,i)=>`<c r="${L[i]}1" s="1" t="inlineStr"><is><t>${esc(h)}</t></is></c>`).join("") + "</row>";
+  for(let r=0;r<n;r++){
+    const cells = data.map((a,i)=>a[r] ? `<c r="${L[i]}${r+2}" t="inlineStr"><is><t>${esc(a[r])}</t></is></c>` : "").join("");
+    if(cells) rows += `<row r="${r+2}">${cells}</row>`;
+  }
+  const X = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
+  const NS = 'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"';
+  return zip({
+    "[Content_Types].xml": X+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>',
+    "_rels/.rels": X+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>',
+    "xl/workbook.xml": X+`<workbook ${NS} xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="${CONFIG.sheetName}" sheetId="1" r:id="rId1"/></sheets></workbook>`,
+    "xl/_rels/workbook.xml.rels": X+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>',
+    "xl/styles.xml": X+`<styleSheet ${NS}><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFDCE9F7"/></patternFill></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf/></cellStyleXfs><cellXfs count="2"><xf/><xf fontId="1" fillId="2" applyFont="1" applyFill="1"/></cellXfs></styleSheet>`,
+    "xl/worksheets/sheet1.xml": X+`<worksheet ${NS}><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols><col min="1" max="8" width="22" customWidth="1"/></cols><sheetData>${rows}</sheetData></worksheet>`
+  });
+}
+
+/* ---------- Conexión con el archivo (File System Access API) ---------- */
+const DB = () => new Promise((ok,ko)=>{ const r = indexedDB.open("registroInstrumental",1); r.onupgradeneeded = ()=>r.result.createObjectStore("h"); r.onsuccess = ()=>ok(r.result); r.onerror = ()=>ko(r.error); });
+async function guardarHandle(h){ try{ const db = await DB(); db.transaction("h","readwrite").objectStore("h").put(h,"file"); }catch(e){} }
+async function cargarHandle(){ try{ const db = await DB(); return await new Promise(ok=>{ const r = db.transaction("h").objectStore("h").get("file"); r.onsuccess = ()=>ok(r.result||null); r.onerror = ()=>ok(null); }); }catch(e){ return null; } }
+
+function estado(on,txt){ $("estado").className = "estado "+(on?"on":"off"); $("estadoTxt").textContent = txt; $("conectar").style.display = on ? "none" : ""; $("nuevo").style.display = on ? "none" : ""; }
+
+async function leerArchivo(){
+  const f = await handle.getFile();
+  return { data: await parseWorkbook(await f.arrayBuffer()), lm: f.lastModified };
+}
+async function activar(h){
+  handle = h;
+  if((await h.requestPermission({mode:"readwrite"}))!=="granted") throw new Error("Permiso de escritura denegado.");
+  const {data} = await leerArchivo();
+  contadores(data); estado(true,"Conectado a "+h.name);
+  await guardarHandle(h); inp.focus();
+}
+async function conectar(){
+  try{
+    const [h] = await window.showOpenFilePicker({types:[{description:"Excel",accept:{"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":[".xlsx"]}}]});
+    await activar(h);
+  }catch(e){ if(e.name!=="AbortError") mostrarError("NO SE PUDO CONECTAR",e.message); }
+}
+async function crearNuevo(){
+  try{
+    const h = await window.showSaveFilePicker({suggestedName:"registro.xlsx",types:[{description:"Excel",accept:{"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":[".xlsx"]}}]});
+    const w = await h.createWritable(); await w.write(buildWorkbook(COLS.map(()=>[]))); await w.close();
+    await activar(h);
+  }catch(e){ if(e.name!=="AbortError") mostrarError("NO SE PUDO CREAR EL ARCHIVO",e.message); }
+}
+
+/* ---------- Interfaz ---------- */
+function contadores(d){ $("cont").innerHTML = COLS.map((c,i)=>`<div>${c}<b>${d[i].filter(Boolean).length}</b></div>`).join(""); }
+function mostrarError(t,m){
+  const r = $("res"); r.className = "err";
+  r.innerHTML = `<div class="t">${esc(t)}</div><div class="d">${esc(m)}</div>`; beep(false);
+}
+function seleccionar(m){
+  movimiento = m; $("mov").classList.remove("vacio");
+  $("bIn").classList.toggle("sel",m==="Entrada"); $("bOut").classList.toggle("sel",m==="Salida");
+  inp.focus();
+}
+function pistola(code){
+  const b = CONFIG.barcodes;
+  return [b.pistol1,b.pistol2,b.pistol3,b.pistol4].findIndex(a=>a.includes(code)) + 1;
+}
+
+/* ---------- Registro ---------- */
+async function registrar(){
+  if(busy) return;
+  const code = inp.value.trim();
+  if(!movimiento) return mostrarError("ERROR AL REGISTRAR","Selecciona primero ENTRADA o SALIDA."), inp.select();
+  if(!code) return mostrarError("ERROR AL REGISTRAR","No hay ningún código leído."), inp.focus();
+  const n = pistola(code);
+  if(!n) return mostrarError("ERROR AL REGISTRAR","El código «"+code+"» no corresponde a ninguna pistola. No se ha registrado nada."), inp.select();
+  if(!handle) return mostrarError("ERROR AL REGISTRAR","No hay conexión con el archivo Excel. Pulsa «Conectar con registro.xlsx»."), inp.select();
+
+  busy = true; $("reg").disabled = true;
+  const col = (n-1)*2 + (movimiento==="Entrada" ? 0 : 1);
+  try{
+    if((await handle.queryPermission({mode:"readwrite"}))!=="granted"){
+      estado(false,"Permiso caducado"); throw new Error("Hay que volver a conectar con el archivo.");
+    }
+    let stamp, data, hecho = false;
+    for(let intento=0; intento<3 && !hecho; intento++){
+      const r = await leerArchivo(); data = r.data;
+      stamp = fmt(new Date());
+      data[col].push(stamp);
+      if((await handle.getFile()).lastModified !== r.lm) continue;   // otro equipo modificó el archivo: releer
+      const w = await handle.createWritable();
+      await w.write(buildWorkbook(data)); await w.close();
+      hecho = true;
+    }
+    if(!hecho) throw new Error("El archivo cambia constantemente. Inténtalo de nuevo.");
+    const chk = (await leerArchivo()).data;                         // verificación de la escritura
+    if(chk[col].length!==data[col].length || chk[col][chk[col].length-1]!==stamp) throw new Error("No se pudo verificar la escritura en el archivo.");
+
+    const nombre = `Pistola ${n}`, mov = movimiento.toUpperCase();
+    $("res").className = "ok";
+    $("res").innerHTML = `<div class="t">REGISTRO CORRECTO</div><div class="d"><b>${nombre}</b> · ${mov}</div><div class="d">${stamp}</div>`;
+    $("uMov").textContent = movimiento; $("uPis").textContent = nombre; $("uFec").textContent = stamp;
+    contadores(chk); beep(true);
+    inp.value = "";
+  }catch(e){
+    const msg = e.name==="NotAllowedError" || e.name==="NoModificationAllowedError" || /lock|bloquead|in use|uso/i.test(e.message)
+      ? "No se puede escribir en el archivo. Comprueba que nadie lo tiene abierto en Excel y que hay acceso a la carpeta compartida."
+      : e.message;
+    if(e.name==="NotFoundError") estado(false,"Archivo no accesible");
+    mostrarError("ERROR AL REGISTRAR", msg + " El código se conserva para reintentar.");
+    inp.select();
+  }finally{
+    busy = false; $("reg").disabled = false; inp.focus();
+  }
+}
+
+/* ---------- Eventos ---------- */
+$("bIn").onclick = () => seleccionar("Entrada");
+$("bOut").onclick = () => seleccionar("Salida");
+$("reg").onclick = registrar;
+$("conectar").onclick = conectar;
+$("nuevo").onclick = crearNuevo;
+inp.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); registrar(); } });
+inp.addEventListener("blur",()=>setTimeout(()=>{ if(!document.activeElement || document.activeElement===document.body) inp.focus(); },60));
+
+/* ---------- Inicio ---------- */
+contadores(COLS.map(()=>[]));
+(async function(){
+  inp.focus();
+  if(!window.showOpenFilePicker || !window.DecompressionStream){
+    estado(false,"Navegador no compatible"); $("conectar").style.display = $("nuevo").style.display = "none";
+    mostrarError("NAVEGADOR NO COMPATIBLE","Abre la aplicación con Microsoft Edge o Google Chrome actualizados, desde una ruta de archivo (\\\\servidor\\carpeta\\index.html o unidad de red) o https.");
+    return;
+  }
+  const h = await cargarHandle();
+  if(h){
+    try{
+      if((await h.queryPermission({mode:"readwrite"}))==="granted"){ handle = h; const {data} = await leerArchivo(); contadores(data); estado(true,"Conectado a "+h.name); }
+      else { handle = h; $("conectar").textContent = "Reconectar con "+h.name; $("conectar").onclick = async()=>{ try{ await activar(h); }catch(e){ mostrarError("NO SE PUDO CONECTAR",e.message); } }; estado(false,"Pendiente de reconectar"); }
+    }catch(e){ handle = null; estado(false,"Sin conectar"); }
+  } else estado(false,"Sin conectar");
+})();
+</script>
+</body>
+</html>
